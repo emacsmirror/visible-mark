@@ -122,7 +122,7 @@
                             (fun (cdr arg))))))
             (fun global-visible-mark-mode-exclude-alist)) nil)
          (t t))
-    (visible-mark-mode)))
+    (visible-mark-mode t)))
 
 (define-minor-mode visible-mark-mode
   "A mode to make the mark visible."
