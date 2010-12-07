@@ -67,7 +67,7 @@
   :type '(repeat regexp))
                   
 (defun visible-mark-initialize-overlays ()
-  (mapcar 'delete-overlay visible-mark-overlays)
+  (mapc 'delete-overlay visible-mark-overlays)
   (let (overlays)
     (dotimes (i visible-mark-max)
       (let ((overlay (make-overlay (point-min) (point-min))))
@@ -138,7 +138,7 @@
       (progn
         (visible-mark-initialize-overlays)
         (add-hook 'post-command-hook 'visible-mark-move-overlays nil t))
-    (mapcar 'delete-overlay visible-mark-overlays)
+    (mapc 'delete-overlay visible-mark-overlays)
     (setq visible-mark-overlays nil)
     (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
 
