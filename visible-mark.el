@@ -46,8 +46,6 @@
   "The overlays used in this buffer.")
 (make-variable-buffer-local 'visible-mark-overlays)
 
-(defvar visible-mark-non-trailing-faces nil)
-
 (defcustom visible-mark-inhibit-trailing-overlay t
   "If non-nil, inhibit trailing overlay with underline face."
   :group 'visible-mark
@@ -67,21 +65,6 @@
   "A list of buffer names to be excluded"
   :group 'visible-mark
   :type '(repeat regexp))
-
-(defun visible-mark-initialize-faces ()
-  (if (and visible-mark-inhibit-trailing-overlay
-           (null visible-mark-non-trailing-faces))
-      (let (faces)
-        (dotimes (i visible-mark-max)
-          (let ((face (or (nth i visible-mark-faces) 'visible-mark-face))
-                (symbol (intern (format "visible-mark-non-trailing-face%s" i))))
-            (copy-face face symbol)
-            (set-face-attribute symbol nil
-                                :foreground (or (face-attribute face :background) t)
-                                :background 'unspecified
-                                :underline t)
-            (push symbol faces)))
-        (setq visible-mark-non-trailing-faces (nreverse faces)))))
                   
 (defun visible-mark-initialize-overlays ()
   (mapcar 'delete-overlay visible-mark-overlays)
@@ -130,7 +113,6 @@
   :group 'visible-mark
   (if visible-mark-mode
       (progn
-        (visible-mark-initialize-faces)
         (visible-mark-initialize-overlays)
         (add-hook 'post-command-hook 'visible-mark-move-overlays nil t))
     (mapcar 'delete-overlay visible-mark-overlays)
