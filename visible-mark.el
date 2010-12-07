@@ -67,7 +67,11 @@
   :type '(repeat regexp))
                   
 (defun visible-mark-initialize-overlays ()
-  (mapc 'delete-overlay visible-mark-overlays)
+  (mapc
+   (lambda (x)
+     (when (eq 'visible-mark (overlay-get x 'category))
+       (delete-overlay x)))
+   (overlays-in (point-min) (point-max)))  
   (let (overlays)
     (dotimes (i visible-mark-max)
       (let ((overlay (make-overlay (point-min) (point-min))))
