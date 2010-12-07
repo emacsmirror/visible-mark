@@ -71,11 +71,24 @@
   (let (overlays)
     (dotimes (i visible-mark-max)
       (let ((overlay (make-overlay (point-min) (point-min))))
+        (overlay-put overlay 'category 'visible-mark)
         (push overlay overlays)))
     (setq visible-mark-overlays (nreverse overlays))))
 
+(defun visible-mark-find-overlay-at (pos)
+  (let ((overlays (overlays-at pos))
+        found)
+    (while (and overlays (not found))
+      (let ((overlay (car overlays)))
+        (if (eq 'visible-mark (overlay-get overlay 'category))
+            (setq found overlay)))
+      (setq overlays (cdr overlays)))
+    found))
+
 (defun visible-mark-move-overlays ()
   "Move the overlay in `visible-mark-overlay' to a new position."
+  (mapc (lambda (x) (move-overlay x 0 0))
+        visible-mark-overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark-overlays))
     (dotimes (i visible-mark-max)
@@ -83,16 +96,26 @@
              (overlay (car overlays))
              (pos (and mark (marker-position mark))))
         (when pos
-          (overlay-put overlay 'face
-                       (if (and visible-mark-inhibit-trailing-overlay
-                                (save-excursion
-                                  (goto-char pos)
-                                  (eolp)))
-                           (nth i visible-mark-non-trailing-faces)
-                         (or (nth i visible-mark-faces) 'visible-mark-face)))
-          (move-overlay overlay pos (1+ pos)))
+          (cond
+            ((and visible-mark-inhibit-trailing-overlay
+                  (save-excursion (goto-char pos) (eolp)))
+             (overlay-put overlay 'face nil)
+             (if (visible-mark-find-overlay-at pos)
+                 (progn (overlay-put overlay 'before-string nil)
+                        (move-overlay overlay 0 0))
+                 (overlay-put overlay 'before-string
+                              (propertize
+                               " "
+                               'face (or (nth i visible-mark-faces) 'visible-mark-face)
+                               'cursor 0))
+                 (move-overlay overlay pos (1+ pos))))
+            (t
+             (overlay-put overlay 'before-string nil)
+             (overlay-put overlay 'face
+                          (or (nth i visible-mark-faces) 'visible-mark-face))
+             (move-overlay overlay pos (1+ pos)))))
         (setq marks (cdr marks)))
-        (setq overlays (cdr overlays)))))
+      (setq overlays (cdr overlays)))))
 
 (require 'easy-mmode)
 
