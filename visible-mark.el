@@ -31,11 +31,11 @@
 
 (defface visible-mark-face
   `((((type tty) (class color))
-     (:background "gray" :foreground "white"))
+     (:background "gray" :foreground "black"))
     (((type tty) (class mono))
      (:inverse-video t))
     (((class color) (background dark))
-     (:background "gray"))
+     (:background "gray" :foreground "black"))
     (((class color) (background light))
      (:background "grey80"))
     (t (:background "gray")))
