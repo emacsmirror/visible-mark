@@ -20,30 +20,29 @@
 
 ;;; Commentary:
 
-;; Minor mode to display custom overlay faces on mark location(s).
-;; Can display marks from the mark ring in the normal backward direction
-;; in the forward direction.
+;; Emacs minor mode to highlight mark(s).
+;;
+;; Allows setting the number of marks to display, and the faces to display them.
 ;;
 ;; Example installation:
 ;;
 ;; 1. Put this file in Emacs's load-path
 ;;
-;; 2. add to init file
+;; 2. add custom faces to init file
 ;; (require 'visible-mark)
+;; (global-visible-mark-mode 1) ;; or add (visible-mark-mode) to specific hooks
+;;
+;; 3. Add customizations. The defaults are very minimal. They could also be set
+;; via customize.
 ;; 
-;; ;; example of customizations.
-;; ;; This could be set via M-x customize-group visible-mark
+;; (defface visible-mark-active ;; put this before (require 'visible-mark)
+;;   '((((type tty) (class mono)))
+;;     (t (:background "magenta"))) "")
 ;; (setq visible-mark-max 2)
-;; (defface my-visible-mark-face-2
-;;   `((t (:background "orange" :foreground "black")))
-;;   "Face for the mark."
-;;   :group 'visible-mark)
-;; (setq visible-mark-faces `(visible-mark-face1 my-visible-mark-face-2))
+;; (setq visible-mark-faces `(visible-mark-face1 my-visible-mark-face2))
 ;; 
-;; (global-visible-mark-mode +1)
 ;;
-;;
-;; Additional useful functions like unpoping the mark are listed
+;; Additional useful functions like unpoping the mark are at
 ;; http://www.emacswiki.org/emacs/MarkCommands
 ;; and http://www.emacswiki.org/emacs/VisibleMark
 
@@ -90,8 +89,46 @@
     (((class color) (background light))
      (:background "grey80"))
     (t (:background "gray")))
-  "Face for the active mark."
+  "Face for the active mark. To redefine this in your init file,
+do it before loading/requiring visible-mark."
   :group 'visible-mark)
+
+(defcustom visible-mark-inhibit-trailing-overlay t
+  "If non-nil, inhibit the extension of an overlay at the end of a line
+to the window margin."
+  :group 'visible-mark
+  :type 'boolean)
+
+(defcustom global-visible-mark-mode-exclude-alist nil
+  "A list of buffer names to be excluded."
+  :group 'visible-mark
+  :type '(repeat regexp))
+
+
+(defcustom visible-mark-max 1
+  "The number of marks in the backward direction to be visible."
+  :group 'visible-mark
+  :type 'integer)
+
+(defcustom visible-mark-forward-max 0
+  "The number of marks in the forward direction to be visible."
+  :group 'visible-mark
+  :type 'integer)
+
+(defcustom visible-mark-faces nil
+  "A list of mark faces for marks in the backward direction.
+If visible-mark-max is greater than the amount of visible-mark-faces,
+the last defined face will be reused."
+  :group 'visible-mark
+  :type '(repeat face))
+
+(defcustom visible-mark-forward-faces nil
+  "A list of mark faces for marks in the forward direction."
+  :group 'visible-mark
+  :type '(repeat face))
+
+
+;;; example faces
 
 (defface visible-mark-face1
   '((((type tty) (class mono)))
@@ -117,43 +154,13 @@
   :group 'visible-mark)
 
 
+
+
 (defvar visible-mark-overlays nil
-  "The overlays used in this buffer.")
+  "The overlays used for mark faces. Used internally by visible-mark-mode.")
 (make-variable-buffer-local 'visible-mark-overlays)
 
-(defcustom visible-mark-inhibit-trailing-overlay t
-  "If non-nil, inhibit the extension of an overlay at the end of a line
-to the window margin."
-  :group 'visible-mark
-  :type 'boolean)
 
-
-(defcustom visible-mark-max 1
-  "The number of marks in the backward direction to be visible."
-  :group 'visible-mark
-  :type 'integer)
-
-(defcustom visible-mark-forward-max 0
-  "The number of marks in the forward direction to be visible."
-  :group 'visible-mark
-  :type 'integer)
-
-(defcustom visible-mark-faces nil
-  "A list of mark faces for marks in the backward direction.
-If visible-mark-max is greater than the amount of visible-mark-faces,
-the last defined face will be reused."
-  :group 'visible-mark
-  :type '(repeat face))
-
-(defcustom visible-mark-forward-faces nil
-  "A list of mark faces for marks in the forward direction."
-  :group 'visible-mark
-  :type '(repeat face))
-
-(defcustom global-visible-mark-mode-exclude-alist nil
-  "A list of buffer names to be excluded."
-  :group 'visible-mark
-  :type '(repeat regexp))
 
 (defun visible-mark-initialize-overlays ()
   (mapc
