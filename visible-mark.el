@@ -4,6 +4,7 @@
 
 ;; Maintainer: Ian Kelling <ian@iankelling.org>
 ;; Author: Ian Kelling <ian@iankelling.org>
+;; Author: Yann Hodique
 ;; Author: MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
 ;; Author: John Foerch <jjfoerch@earthlink.net>
 ;; Keywords: marking color faces
