@@ -2,7 +2,15 @@
 
 ;; Copyright (C) 2014 by Ian Kelling
 
-;; Author: Several people, most recently Ian Kelling <ian@iankelling.org>
+;; Maintainer: Ian Kelling <ian@iankelling.org>
+;; Author: Ian Kelling <ian@iankelling.org>
+;; Author: MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
+;; Author: John Foerch <jjfoerch@earthlink.net>
+;; Keywords: marking color faces
+;; URL: https://gitlab.com/iankelling/visible-mark
+;; Created: 2008-02-21
+
+;;; License:
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
