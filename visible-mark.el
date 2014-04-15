@@ -242,6 +242,7 @@ the last defined face will be reused."
          (t t))
     (visible-mark-mode t)))
 
+;;;###autoload
 (define-minor-mode visible-mark-mode
   "A mode to make the mark visible."
   nil nil nil
@@ -254,6 +255,7 @@ the last defined face will be reused."
     (setq visible-mark-overlays nil)
     (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
 
+;;;###autoload
 (define-global-minor-mode
   global-visible-mark-mode visible-mark-mode visible-mark-mode-maybe
   :group 'visible-mark)
