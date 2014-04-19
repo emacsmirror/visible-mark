@@ -55,20 +55,6 @@
 ;; http://www.emacswiki.org/emacs/MarkCommands
 ;; and http://www.emacswiki.org/emacs/VisibleMark
 
-;;; Pre-git history:
-;;
-;; 2008-02-21  MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
-;;
-;;      * visible-mark.el: Added function to inhibit trailing overlay.
-;;
-;; 2008-01-31  MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
-;;
-;;      * visible-mark.el: Create formal emacs lisp file from
-;;        http://www.emacswiki.org/cgi-bin/wiki/VisibleMark.
-;;        Yann Hodique and Jorgen Schäfer are original authors.
-;;        Added function to make multiple marks visible.
-;;
-;;
 ;; Known bugs
 ;;
 ;; Observed in circe, when the buffer has a right margin, and there
