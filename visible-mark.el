@@ -3,6 +3,7 @@
 ;; Copyright (C) 2014 by Ian Kelling
 
 ;; Maintainer: Ian Kelling <ian@iankelling.org>
+;; Mailing list: https://lists.iankelling.org/listinfo/visible-mark
 ;; Author: Ian Kelling <ian@iankelling.org>
 ;; Author: Yann Hodique
 ;; Author: MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
@@ -62,7 +63,7 @@
 ;; gets styled with the mark's face. May also happen for left margins, but
 ;; haven't tested yet.
 ;;
-;; Patches / pull requests welcome.
+;; Patches / pull requests / feedback welcome.
 
 ;;; Code:
 
