@@ -34,6 +34,9 @@
 ;;
 ;; Allows setting the number of marks to display, and the faces to display them.
 ;;
+;; A good blog post was written introducing this package:
+;; http://pragmaticemacs.com/emacs/regions-marks-and-visual-mark/
+;;
 ;; Example installation:
 ;;
 ;; 1. Put this file in Emacs's load-path
