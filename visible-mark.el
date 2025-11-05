@@ -1,4 +1,4 @@
-;;; visible-mark.el --- Make marks visible.
+;;; visible-mark.el --- Make marks visible. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2014 by Ian Kelling
 
