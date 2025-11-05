@@ -99,7 +99,6 @@ do it before loading/requiring visible-mark."
   :group 'visible-mark
   :type '(repeat regexp))
 
-
 (defcustom visible-mark-max 1
   "The number of marks in the backward direction to be visible."
   :group 'visible-mark
@@ -144,7 +143,8 @@ the last defined face will be reused."
   "Placeholder face for customization and addition to subsequent face lists."
   :group 'visible-mark)
 
-(defvar-local visible-mark--overlays nil
+;; Make local on buffer activation.
+(defvar visible-mark--overlays nil
   "The overlays used for mark faces.  Used internally by `visible-mark-mode'.")
 
 (defun visible-mark--initialize-overlays ()
@@ -167,8 +167,8 @@ the last defined face will be reused."
         found)
     (while (and overlays (not found))
       (let ((overlay (car overlays)))
-        (if (eq 'visible-mark (overlay-get overlay 'category))
-            (setq found overlay)))
+        (when (eq 'visible-mark (overlay-get overlay 'category))
+          (setq found overlay)))
       (setq overlays (cdr overlays)))
     found))
 
@@ -180,17 +180,17 @@ This is run in the `post-command-hook'."
         (overlays visible-mark--overlays)
         (faces visible-mark-faces)
         (faces-forward visible-mark-forward-faces))
-    (if mark-active
-        (setq faces (cons 'visible-mark-active (cdr faces))))
+    (when mark-active
+      (setq faces (cons 'visible-mark-active (cdr faces))))
     (dotimes (_ visible-mark-max)
       (visible-mark--move-overlay (pop overlays) (pop marks) (car faces))
-      (if (cdr faces)
-          (pop faces)))
+      (when (cdr faces)
+        (pop faces)))
     (dotimes (i visible-mark-forward-max)
       (visible-mark--move-overlay
        (pop overlays) (car (last marks (1+ i))) (car faces-forward))
-      (if (cdr faces-forward)
-          (pop faces-forward)))))
+      (when (cdr faces-forward)
+        (pop faces-forward)))))
 
 (defun visible-mark--move-overlay (overlay mark face)
   "Set OVERLAY to position of MARK and display of FACE."
@@ -202,11 +202,12 @@ This is run in the `post-command-hook'."
                (goto-char pos)
                (eolp)))
         (overlay-put overlay 'face nil)
-        (if (visible-mark--find-overlay-at pos)
-            (progn
-              (overlay-put overlay 'before-string nil))
+        (cond
+         ((visible-mark--find-overlay-at pos)
+          (overlay-put overlay 'before-string nil))
+         (t
           (overlay-put overlay 'before-string (propertize " " 'face face))
-          (move-overlay overlay pos (1+ pos))))
+          (move-overlay overlay pos (1+ pos)))))
        (t
         (overlay-put overlay 'before-string nil)
         (overlay-put overlay 'face face)
@@ -220,9 +221,11 @@ This is run in the `post-command-hook'."
          ((cl-flet
            ((fun
              (arg)
-             (if (null arg)
-                 nil
-               (or (string-match (car arg) (buffer-name)) (fun (cdr arg))))))
+             (cond
+              ((null arg)
+               nil)
+              (t
+               (or (string-match (car arg) (buffer-name)) (fun (cdr arg)))))))
            (fun global-visible-mark-mode-exclude-alist))
           nil)
          (t
@@ -234,13 +237,16 @@ This is run in the `post-command-hook'."
   "A mode to make the mark visible."
   :global nil
 
-  (if visible-mark-mode
-      (progn
-        (visible-mark--initialize-overlays)
-        (add-hook 'post-command-hook 'visible-mark--move-overlays nil t))
+  (cond
+   (visible-mark-mode
+    (make-local-variable 'visible-mark--overlays)
+    (visible-mark--initialize-overlays)
+    (add-hook 'post-command-hook 'visible-mark--move-overlays nil t))
+   (t
     (mapc 'delete-overlay visible-mark--overlays)
     (setq visible-mark--overlays nil)
-    (remove-hook 'post-command-hook 'visible-mark--move-overlays t)))
+    (remove-hook 'post-command-hook 'visible-mark--move-overlays t)
+    (kill-local-variable 'visible-mark--overlays))))
 
 ;;;###autoload
 (define-globalized-minor-mode global-visible-mark-mode
