@@ -79,14 +79,10 @@
   :prefix "visible-mark-")
 
 (defface visible-mark-active
-  '((((type tty) (class color))
-     (:background "gray" :foreground "black"))
-    (((type tty) (class mono))
-     (:inverse-video t))
-    (((class color) (background dark))
-     (:background "gray" :foreground "black"))
-    (((class color) (background light))
-     (:background "grey80"))
+  '((((type tty) (class color)) (:background "gray" :foreground "black"))
+    (((type tty) (class mono)) (:inverse-video t))
+    (((class color) (background dark)) (:background "gray" :foreground "black"))
+    (((class color) (background light)) (:background "grey80"))
     (t (:background "gray")))
   "Face for the active mark. To redefine this in your init file,
 do it before loading/requiring visible-mark."
@@ -130,35 +126,28 @@ the last defined face will be reused."
 ;;; example faces
 
 (defface visible-mark-face1
-  '((((type tty) (class mono)))
-    (t (:background "light salmon")))
+  '((((type tty) (class mono))) (t (:background "light salmon")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
 (defface visible-mark-face2
-  '((((type tty) (class mono)))
-    (t (:background "light goldenrod")))
+  '((((type tty) (class mono))) (t (:background "light goldenrod")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
 (defface visible-mark-forward-face1
-  '((((type tty) (class mono)))
-    (t (:background "pale green")))
+  '((((type tty) (class mono))) (t (:background "pale green")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
-(defface visible-mark-forward-face2
-  nil
+(defface visible-mark-forward-face2 nil
   "Placeholder face for customization and addition to subsequent face lists."
   :group 'visible-mark)
-
-
 
 
 (defvar visible-mark-overlays nil
   "The overlays used for mark faces. Used internally by visible-mark-mode.")
 (make-variable-buffer-local 'visible-mark-overlays)
-
 
 
 (defun visible-mark-initialize-overlays ()
@@ -186,35 +175,37 @@ the last defined face will be reused."
 
 (defun visible-mark-move-overlays ()
   "Update overlays in `visible-mark-overlays'. This is run in the `post-command-hook'"
-  (mapc (lambda (x) (delete-overlay x))
-        visible-mark-overlays)
+  (mapc (lambda (x) (delete-overlay x)) visible-mark-overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark-overlays)
         (faces visible-mark-faces)
         (faces-forward visible-mark-forward-faces))
-    (if mark-active (setq faces (cons 'visible-mark-active (cdr faces))))
+    (if mark-active
+        (setq faces (cons 'visible-mark-active (cdr faces))))
     (dotimes (i visible-mark-max)
       (visible-mark-move-overlay (pop overlays) (pop marks) (car faces))
-      (if (cdr faces) (pop faces)))
+      (if (cdr faces)
+          (pop faces)))
     (dotimes (i visible-mark-forward-max)
-      (visible-mark-move-overlay (pop overlays) (car (last marks (1+ i))) (car faces-forward))
-      (if (cdr faces-forward) (pop faces-forward)))))
+      (visible-mark-move-overlay
+       (pop overlays) (car (last marks (1+ i))) (car faces-forward))
+      (if (cdr faces-forward)
+          (pop faces-forward)))))
 
 (defun visible-mark-move-overlay (overlay mark face)
   "Set OVERLAY to position of MARK and display of FACE."
   (let ((pos (and mark (marker-position mark))))
     (when (and pos (not (equal (point) pos)))
       (cond
-       ((and
-         visible-mark-inhibit-trailing-overlay
-         (save-excursion (goto-char pos) (eolp)))
+       ((and visible-mark-inhibit-trailing-overlay
+             (save-excursion
+               (goto-char pos)
+               (eolp)))
         (overlay-put overlay 'face nil)
         (if (visible-mark-find-overlay-at pos)
-            (progn (overlay-put overlay 'before-string nil))
-          (overlay-put overlay 'before-string
-                       (propertize
-                        " "
-                        'face face))
+            (progn
+              (overlay-put overlay 'before-string nil))
+          (overlay-put overlay 'before-string (propertize " " 'face face))
           (move-overlay overlay pos (1+ pos))))
        (t
         (overlay-put overlay 'before-string nil)
@@ -224,20 +215,28 @@ the last defined face will be reused."
 (require 'easy-mmode)
 (defun visible-mark-mode-maybe ()
   (when (cond
-         ((minibufferp (current-buffer)) nil)
-         ((cl-flet ((fun (arg)
-                         (if (null arg) nil
-                           (or (string-match (car arg) (buffer-name))
-                               (fun (cdr arg))))))
-            (fun global-visible-mark-mode-exclude-alist)) nil)
-         (t t))
+         ((minibufferp (current-buffer))
+          nil)
+         ((cl-flet
+           ((fun
+             (arg)
+             (if (null arg)
+                 nil
+               (or (string-match (car arg) (buffer-name)) (fun (cdr arg))))))
+           (fun global-visible-mark-mode-exclude-alist))
+          nil)
+         (t
+          t))
     (visible-mark-mode t)))
 
 ;;;###autoload
 (define-minor-mode visible-mark-mode
   "A mode to make the mark visible."
-  nil nil nil
-  :group 'visible-mark
+  nil
+  nil
+  nil
+  :group
+  'visible-mark
   (if visible-mark-mode
       (progn
         (visible-mark-initialize-overlays)
@@ -247,8 +246,9 @@ the last defined face will be reused."
     (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
 
 ;;;###autoload
-(define-global-minor-mode
-  global-visible-mark-mode visible-mark-mode visible-mark-mode-maybe
+(define-global-minor-mode global-visible-mark-mode
+  visible-mark-mode
+  visible-mark-mode-maybe
   :group 'visible-mark)
 
 (provide 'visible-mark)
