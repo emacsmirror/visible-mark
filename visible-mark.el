@@ -47,13 +47,13 @@
 ;;
 ;; 3. Add customizations. The defaults are very minimal. They could also be set
 ;; via customize.
-;; 
+;;
 ;; (defface visible-mark-active ;; put this before (require 'visible-mark)
 ;;   '((((type tty) (class mono)))
 ;;     (t (:background "magenta"))) "")
 ;; (setq visible-mark-max 2)
 ;; (setq visible-mark-faces `(visible-mark-face1 visible-mark-face2))
-;; 
+;;
 ;;
 ;; Additional useful functions like unpoping the mark are at
 ;; http://www.emacswiki.org/emacs/MarkCommands
@@ -134,7 +134,7 @@ the last defined face will be reused."
     (t (:background "light salmon")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
-  
+
 (defface visible-mark-face2
   '((((type tty) (class mono)))
     (t (:background "light goldenrod")))
@@ -166,7 +166,7 @@ the last defined face will be reused."
    (lambda (x)
      (when (eq 'visible-mark (overlay-get x 'category))
        (delete-overlay x)))
-   (overlays-in (point-min) (point-max)))  
+   (overlays-in (point-min) (point-max)))
   (let (overlays)
     (dotimes (i (+ visible-mark-max visible-mark-forward-max))
       (let ((overlay (make-overlay (point-min) (point-min))))
