@@ -84,13 +84,13 @@
     (((class color) (background dark)) (:background "gray" :foreground "black"))
     (((class color) (background light)) (:background "grey80"))
     (t (:background "gray")))
-  "Face for the active mark. To redefine this in your init file,
+  "Face for the active mark.
+To redefine this in your init file,
 do it before loading/requiring visible-mark."
   :group 'visible-mark)
 
 (defcustom visible-mark-inhibit-trailing-overlay t
-  "If non-nil, inhibit the extension of an overlay at the end of a line
-to the window margin."
+  "Inhibit the overlay from extending from the line-end to the window margin."
   :group 'visible-mark
   :type 'boolean)
 
@@ -112,7 +112,7 @@ to the window margin."
 
 (defcustom visible-mark-faces nil
   "A list of mark faces for marks in the backward direction.
-If visible-mark-max is greater than the amount of visible-mark-faces,
+If `visible-mark-max' is greater than the amount of `visible-mark-faces',
 the last defined face will be reused."
   :group 'visible-mark
   :type '(repeat face))
@@ -146,11 +146,12 @@ the last defined face will be reused."
 
 
 (defvar visible-mark-overlays nil
-  "The overlays used for mark faces. Used internally by visible-mark-mode.")
+  "The overlays used for mark faces. Used internally by `visible-mark-mode'.")
 (make-variable-buffer-local 'visible-mark-overlays)
 
 
 (defun visible-mark-initialize-overlays ()
+  "Setup overlays in the current buffer."
   (mapc
    (lambda (x)
      (when (eq 'visible-mark (overlay-get x 'category))
@@ -164,6 +165,7 @@ the last defined face will be reused."
     (setq visible-mark-overlays (nreverse overlays))))
 
 (defun visible-mark-find-overlay-at (pos)
+  "Return the visible-mark overlay at POS."
   (let ((overlays (overlays-at pos))
         found)
     (while (and overlays (not found))
@@ -174,7 +176,7 @@ the last defined face will be reused."
     found))
 
 (defun visible-mark-move-overlays ()
-  "Update overlays in `visible-mark-overlays'. This is run in the `post-command-hook'"
+  "Update overlays in `visible-mark-overlays'. This is run in the `post-command-hook'."
   (mapc (lambda (x) (delete-overlay x)) visible-mark-overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark-overlays)
@@ -214,6 +216,7 @@ the last defined face will be reused."
 
 (require 'easy-mmode)
 (defun visible-mark-mode-maybe ()
+  "Enable visible mark mode based on the context."
   (when (cond
          ((minibufferp (current-buffer))
           nil)
