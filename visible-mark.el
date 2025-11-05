@@ -45,8 +45,8 @@
 ;; (require 'visible-mark)
 ;; (global-visible-mark-mode 1) ;; or add (visible-mark-mode) to specific hooks
 ;;
-;; 3. Add customizations. The defaults are very minimal. They could also be set
-;; via customize.
+;; 3. Add customizations.  The defaults are very minimal.
+;; They could also be set via customize.
 ;;
 ;; (defface visible-mark-active ;; put this before (require 'visible-mark)
 ;;   '((((type tty) (class mono)))
@@ -63,7 +63,7 @@
 ;;
 ;; Observed in circe, when the buffer has a right margin, and there
 ;; is a mark at the beginning of a line, any text in the margin on that line
-;; gets styled with the mark's face. May also happen for left margins, but
+;; gets styled with the mark's face.  May also happen for left margins, but
 ;; haven't tested yet.
 ;;
 ;; Patches / pull requests / feedback welcome.
@@ -146,7 +146,7 @@ the last defined face will be reused."
 
 
 (defvar visible-mark-overlays nil
-  "The overlays used for mark faces. Used internally by `visible-mark-mode'.")
+  "The overlays used for mark faces.  Used internally by `visible-mark-mode'.")
 (make-variable-buffer-local 'visible-mark-overlays)
 
 
@@ -158,7 +158,7 @@ the last defined face will be reused."
        (delete-overlay x)))
    (overlays-in (point-min) (point-max)))
   (let (overlays)
-    (dotimes (i (+ visible-mark-max visible-mark-forward-max))
+    (dotimes (_ (+ visible-mark-max visible-mark-forward-max))
       (let ((overlay (make-overlay (point-min) (point-min))))
         (overlay-put overlay 'category 'visible-mark)
         (push overlay overlays)))
@@ -176,7 +176,8 @@ the last defined face will be reused."
     found))
 
 (defun visible-mark-move-overlays ()
-  "Update overlays in `visible-mark-overlays'. This is run in the `post-command-hook'."
+  "Update overlays in `visible-mark-overlays'.
+This is run in the `post-command-hook'."
   (mapc (lambda (x) (delete-overlay x)) visible-mark-overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark-overlays)
@@ -184,7 +185,7 @@ the last defined face will be reused."
         (faces-forward visible-mark-forward-faces))
     (if mark-active
         (setq faces (cons 'visible-mark-active (cdr faces))))
-    (dotimes (i visible-mark-max)
+    (dotimes (_ visible-mark-max)
       (visible-mark-move-overlay (pop overlays) (pop marks) (car faces))
       (if (cdr faces)
           (pop faces)))
@@ -214,7 +215,6 @@ the last defined face will be reused."
         (overlay-put overlay 'face face)
         (move-overlay overlay pos (1+ pos)))))))
 
-(require 'easy-mmode)
 (defun visible-mark-mode-maybe ()
   "Enable visible mark mode based on the context."
   (when (cond
@@ -235,11 +235,8 @@ the last defined face will be reused."
 ;;;###autoload
 (define-minor-mode visible-mark-mode
   "A mode to make the mark visible."
-  nil
-  nil
-  nil
-  :group
-  'visible-mark
+  :global nil
+
   (if visible-mark-mode
       (progn
         (visible-mark-initialize-overlays)
@@ -249,10 +246,9 @@ the last defined face will be reused."
     (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
 
 ;;;###autoload
-(define-global-minor-mode global-visible-mark-mode
+(define-globalized-minor-mode global-visible-mark-mode
   visible-mark-mode
-  visible-mark-mode-maybe
-  :group 'visible-mark)
+  visible-mark-mode-maybe)
 
 (provide 'visible-mark)
 ;;; visible-mark.el ends here
