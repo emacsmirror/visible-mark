@@ -144,13 +144,10 @@ the last defined face will be reused."
   "Placeholder face for customization and addition to subsequent face lists."
   :group 'visible-mark)
 
-
-(defvar visible-mark-overlays nil
+(defvar-local visible-mark--overlays nil
   "The overlays used for mark faces.  Used internally by `visible-mark-mode'.")
-(make-variable-buffer-local 'visible-mark-overlays)
 
-
-(defun visible-mark-initialize-overlays ()
+(defun visible-mark--initialize-overlays ()
   "Setup overlays in the current buffer."
   (mapc
    (lambda (x)
@@ -162,9 +159,9 @@ the last defined face will be reused."
       (let ((overlay (make-overlay (point-min) (point-min))))
         (overlay-put overlay 'category 'visible-mark)
         (push overlay overlays)))
-    (setq visible-mark-overlays (nreverse overlays))))
+    (setq visible-mark--overlays (nreverse overlays))))
 
-(defun visible-mark-find-overlay-at (pos)
+(defun visible-mark--find-overlay-at (pos)
   "Return the visible-mark overlay at POS."
   (let ((overlays (overlays-at pos))
         found)
@@ -175,27 +172,27 @@ the last defined face will be reused."
       (setq overlays (cdr overlays)))
     found))
 
-(defun visible-mark-move-overlays ()
-  "Update overlays in `visible-mark-overlays'.
+(defun visible-mark--move-overlays ()
+  "Update overlays in `visible-mark--overlays'.
 This is run in the `post-command-hook'."
-  (mapc (lambda (x) (delete-overlay x)) visible-mark-overlays)
+  (mapc (lambda (x) (delete-overlay x)) visible-mark--overlays)
   (let ((marks (cons (mark-marker) mark-ring))
-        (overlays visible-mark-overlays)
+        (overlays visible-mark--overlays)
         (faces visible-mark-faces)
         (faces-forward visible-mark-forward-faces))
     (if mark-active
         (setq faces (cons 'visible-mark-active (cdr faces))))
     (dotimes (_ visible-mark-max)
-      (visible-mark-move-overlay (pop overlays) (pop marks) (car faces))
+      (visible-mark--move-overlay (pop overlays) (pop marks) (car faces))
       (if (cdr faces)
           (pop faces)))
     (dotimes (i visible-mark-forward-max)
-      (visible-mark-move-overlay
+      (visible-mark--move-overlay
        (pop overlays) (car (last marks (1+ i))) (car faces-forward))
       (if (cdr faces-forward)
           (pop faces-forward)))))
 
-(defun visible-mark-move-overlay (overlay mark face)
+(defun visible-mark--move-overlay (overlay mark face)
   "Set OVERLAY to position of MARK and display of FACE."
   (let ((pos (and mark (marker-position mark))))
     (when (and pos (not (equal (point) pos)))
@@ -205,7 +202,7 @@ This is run in the `post-command-hook'."
                (goto-char pos)
                (eolp)))
         (overlay-put overlay 'face nil)
-        (if (visible-mark-find-overlay-at pos)
+        (if (visible-mark--find-overlay-at pos)
             (progn
               (overlay-put overlay 'before-string nil))
           (overlay-put overlay 'before-string (propertize " " 'face face))
@@ -215,7 +212,7 @@ This is run in the `post-command-hook'."
         (overlay-put overlay 'face face)
         (move-overlay overlay pos (1+ pos)))))))
 
-(defun visible-mark-mode-maybe ()
+(defun visible-mark--mode-maybe ()
   "Enable visible mark mode based on the context."
   (when (cond
          ((minibufferp (current-buffer))
@@ -239,16 +236,16 @@ This is run in the `post-command-hook'."
 
   (if visible-mark-mode
       (progn
-        (visible-mark-initialize-overlays)
-        (add-hook 'post-command-hook 'visible-mark-move-overlays nil t))
-    (mapc 'delete-overlay visible-mark-overlays)
-    (setq visible-mark-overlays nil)
-    (remove-hook 'post-command-hook 'visible-mark-move-overlays t)))
+        (visible-mark--initialize-overlays)
+        (add-hook 'post-command-hook 'visible-mark--move-overlays nil t))
+    (mapc 'delete-overlay visible-mark--overlays)
+    (setq visible-mark--overlays nil)
+    (remove-hook 'post-command-hook 'visible-mark--move-overlays t)))
 
 ;;;###autoload
 (define-globalized-minor-mode global-visible-mark-mode
   visible-mark-mode
-  visible-mark-mode-maybe)
+  visible-mark--mode-maybe)
 
 (provide 'visible-mark)
 ;;; visible-mark.el ends here
