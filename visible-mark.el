@@ -70,9 +70,6 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
-
 (defgroup visible-mark nil
   "Show the position of your mark."
   :group 'convenience
@@ -165,11 +162,12 @@ the last defined face will be reused."
   "Return the visible-mark overlay at POS."
   (let ((overlays (overlays-at pos))
         found)
-    (while (and overlays (not found))
+    (while overlays
       (let ((overlay (car overlays)))
+        (setq overlays (cdr overlays))
         (when (eq 'visible-mark (overlay-get overlay 'category))
-          (setq found overlay)))
-      (setq overlays (cdr overlays)))
+          (setq overlays nil) ; Break.
+          (setq found overlay))))
     found))
 
 (defun visible-mark--move-overlays ()
@@ -218,15 +216,16 @@ This is run in the `post-command-hook'."
   (when (cond
          ((minibufferp (current-buffer))
           nil)
-         ((cl-flet
-           ((fun
-             (arg)
-             (cond
-              ((null arg)
-               nil)
-              (t
-               (or (string-match (car arg) (buffer-name)) (fun (cdr arg)))))))
-           (fun global-visible-mark-mode-exclude-alist))
+         ((let ((name (buffer-name))
+                (exclusions global-visible-mark-mode-exclude-alist)
+                (found nil))
+            (while exclusions
+              (let ((arg (car exclusions)))
+                (setq exclusions (cdr exclusions))
+                (when (string-match-p arg name)
+                  (setq exclusions nil) ; Break.
+                  (setq found t))))
+            found)
           nil)
          (t
           t))
