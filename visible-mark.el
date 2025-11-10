@@ -1,32 +1,18 @@
-;;; visible-mark.el --- Make marks visible. -*- lexical-binding: t -*-
+;;; visible-mark.el --- Make marks visible -*- lexical-binding: t -*-
 
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Copyright (C) 2014 by Ian Kelling
 
-;; Maintainer: Ian Kelling <ian@iankelling.org>
-;; Mailing list: https://lists.iankelling.org/listinfo/visible-mark
+;; Maintainer: Campbell Barton <ideasman42@gmail.com>
 ;; Author: Ian Kelling <ian@iankelling.org>
 ;; Author: Yann Hodique
 ;; Author: MATSUYAMA Tomohiro <t.matsuyama.pub@gmail.com>
 ;; Author: John Foerch <jjfoerch@earthlink.net>
+
+;; URL: https://codeberg.org/ideasman42/emacs-visible-mark
 ;; Keywords: marking color faces
-;; URL: https://gitlab.com/iankelling/visible-mark
-;; Created: 2008-02-21
-
-;;; License:
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
 
@@ -91,7 +77,13 @@ do it before loading/requiring visible-mark."
   :group 'visible-mark
   :type 'boolean)
 
-(defcustom global-visible-mark-mode-exclude-alist nil
+;; Historic name (package-lint complains).
+(define-obsolete-variable-alias
+  'global-visible-mark-mode-exclude-alist
+  'visible-mark-mode-global-exclude
+  "0.1.0")
+
+(defcustom visible-mark-mode-global-exclude nil
   "A list of buffer names to be excluded."
   :group 'visible-mark
   :type '(repeat regexp))
@@ -217,7 +209,7 @@ This is run in the `post-command-hook'."
          ((minibufferp (current-buffer))
           nil)
          ((let ((name (buffer-name))
-                (exclusions global-visible-mark-mode-exclude-alist)
+                (exclusions visible-mark-mode-global-exclude)
                 (found nil))
             (while exclusions
               (let ((arg (car exclusions)))
@@ -240,11 +232,11 @@ This is run in the `post-command-hook'."
    (visible-mark-mode
     (make-local-variable 'visible-mark--overlays)
     (visible-mark--initialize-overlays)
-    (add-hook 'post-command-hook 'visible-mark--move-overlays nil t))
+    (add-hook 'post-command-hook #'visible-mark--move-overlays nil t))
    (t
     (mapc 'delete-overlay visible-mark--overlays)
     (setq visible-mark--overlays nil)
-    (remove-hook 'post-command-hook 'visible-mark--move-overlays t)
+    (remove-hook 'post-command-hook #'visible-mark--move-overlays t)
     (kill-local-variable 'visible-mark--overlays))))
 
 ;;;###autoload
