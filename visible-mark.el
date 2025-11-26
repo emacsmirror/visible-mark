@@ -185,7 +185,7 @@ This is run in the `post-command-hook'."
 (defun visible-mark--move-overlay (overlay mark face)
   "Set OVERLAY to position of MARK and display of FACE."
   (let ((pos (and mark (marker-position mark))))
-    (when (and pos (not (equal (point) pos)))
+    (when (and pos (null (equal (point) pos)))
       (cond
        ((and visible-mark-inhibit-trailing-overlay
              (save-excursion
