@@ -179,11 +179,14 @@ This is run in the `post-command-hook'."
       (visible-mark--move-overlay (pop overlays) (pop marks) (car faces))
       (when (cdr faces)
         (pop faces)))
-    (dotimes (i visible-mark-forward-max)
-      (visible-mark--move-overlay
-       (pop overlays) (car (last marks (1+ i))) (car faces-forward))
-      (when (cdr faces-forward)
-        (pop faces-forward)))))
+    ;; Precompute forward marks to avoid O(n²) from repeated `last' calls.
+    ;; Use `reverse' (not `nreverse') since `last' returns a tail of `marks'.
+    (let ((forward-marks (reverse (last marks visible-mark-forward-max))))
+      (dotimes (_ visible-mark-forward-max)
+        (visible-mark--move-overlay
+         (pop overlays) (pop forward-marks) (car faces-forward))
+        (when (cdr faces-forward)
+          (pop faces-forward))))))
 
 (defun visible-mark--move-overlay (overlay mark face)
   "Set OVERLAY to position of MARK and display of FACE."
