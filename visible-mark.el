@@ -114,17 +114,20 @@ the last defined face will be reused."
 ;;; example faces
 
 (defface visible-mark-face1
-  '((((type tty) (class mono))) (t (:background "light salmon")))
+  '((((type tty) (class mono)) (:inverse-video t))
+    (t (:background "light salmon")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
 (defface visible-mark-face2
-  '((((type tty) (class mono))) (t (:background "light goldenrod")))
+  '((((type tty) (class mono)) (:inverse-video t))
+    (t (:background "light goldenrod")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
 (defface visible-mark-forward-face1
-  '((((type tty) (class mono))) (t (:background "pale green")))
+  '((((type tty) (class mono)) (:inverse-video t))
+    (t (:background "pale green")))
   "Example face which can be customized and added to subsequent face lists."
   :group 'visible-mark)
 
