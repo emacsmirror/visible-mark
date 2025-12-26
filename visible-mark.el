@@ -165,7 +165,7 @@ the last defined face will be reused."
 (defun visible-mark--move-overlays ()
   "Update overlays in `visible-mark--overlays'.
 This is run in the `post-command-hook'."
-  (mapc (lambda (x) (delete-overlay x)) visible-mark--overlays)
+  (mapc #'delete-overlay visible-mark--overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark--overlays)
         (faces visible-mark-faces)
@@ -235,7 +235,7 @@ This is run in the `post-command-hook'."
     (visible-mark--initialize-overlays)
     (add-hook 'post-command-hook #'visible-mark--move-overlays nil t))
    (t
-    (mapc 'delete-overlay visible-mark--overlays)
+    (mapc #'delete-overlay visible-mark--overlays)
     (setq visible-mark--overlays nil)
     (remove-hook 'post-command-hook #'visible-mark--move-overlays t)
     (kill-local-variable 'visible-mark--overlays))))
