@@ -186,22 +186,23 @@ This is run in the `post-command-hook'."
   "Set OVERLAY to position of MARK and display of FACE."
   (let ((pos (and mark (marker-position mark))))
     (when (and pos (null (equal (point) pos)))
-      (cond
-       ((and visible-mark-inhibit-trailing-overlay
-             (save-excursion
-               (goto-char pos)
-               (eolp)))
-        (overlay-put overlay 'face nil)
+      (let ((pos-end (min (1+ pos) (point-max))))
         (cond
-         ((visible-mark--find-overlay-at pos)
-          (overlay-put overlay 'before-string nil))
+         ((and visible-mark-inhibit-trailing-overlay
+               (save-excursion
+                 (goto-char pos)
+                 (eolp)))
+          (overlay-put overlay 'face nil)
+          (cond
+           ((visible-mark--find-overlay-at pos)
+            (overlay-put overlay 'before-string nil))
+           (t
+            (overlay-put overlay 'before-string (propertize " " 'face face))
+            (move-overlay overlay pos pos-end))))
          (t
-          (overlay-put overlay 'before-string (propertize " " 'face face))
-          (move-overlay overlay pos (1+ pos)))))
-       (t
-        (overlay-put overlay 'before-string nil)
-        (overlay-put overlay 'face face)
-        (move-overlay overlay pos (1+ pos)))))))
+          (overlay-put overlay 'before-string nil)
+          (overlay-put overlay 'face face)
+          (move-overlay overlay pos pos-end)))))))
 
 (defun visible-mark--mode-maybe ()
   "Enable visible mark mode based on the context."
