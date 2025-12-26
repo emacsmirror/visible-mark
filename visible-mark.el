@@ -1,7 +1,7 @@
-;;; visible-mark.el --- Make marks visible -*- lexical-binding: t -*-
+;;; visible-mark.el --- Highlight marks in buffers -*- lexical-binding: t -*-
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
-;; Copyright (C) 2014 by Ian Kelling
+;; Copyright (C) 2014 Ian Kelling
 
 ;; Maintainer: Campbell Barton <ideasman42@gmail.com>
 ;; Author: Ian Kelling <ian@iankelling.org>
@@ -10,56 +10,56 @@
 ;; Author: John Foerch <jjfoerch@earthlink.net>
 
 ;; URL: https://codeberg.org/ideasman42/emacs-visible-mark
-;; Keywords: marking color faces
+;; Keywords: convenience faces
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
 
-;; Emacs minor mode to highlight mark(s).
+;; Minor mode to highlight mark(s).
 ;;
 ;; Allows setting the number of marks to display, and the faces to display them.
 ;;
 ;; A good blog post was written introducing this package:
-;; http://pragmaticemacs.com/emacs/regions-marks-and-visual-mark/
+;; https://pragmaticemacs.com/emacs/regions-marks-and-visual-mark/
 ;;
 ;; Example installation:
 ;;
 ;; 1. Put this file in Emacs's load-path
 ;;
-;; 2. add custom faces to init file
+;; 2. Add to your init file
 ;; (require 'visible-mark)
 ;; (global-visible-mark-mode 1) ;; or add (visible-mark-mode) to specific hooks
 ;;
 ;; 3. Add customizations.  The defaults are very minimal.
-;; They could also be set via customize.
+;; These can also be set via customize.
 ;;
 ;; (defface visible-mark-active ;; put this before (require 'visible-mark)
-;;   '((((type tty) (class mono)))
-;;     (t (:background "magenta"))) "")
+;;   '((((type tty) (class mono)) (:inverse-video t))
+;;     (t (:background "magenta")))
+;;   "Custom face for the active mark.")
 ;; (setq visible-mark-max 2)
 ;; (setq visible-mark-faces '(visible-mark-face1 visible-mark-face2))
 ;;
-;;
-;; Additional useful functions like unpoping the mark are at
-;; http://www.emacswiki.org/emacs/MarkCommands
-;; and http://www.emacswiki.org/emacs/VisibleMark
+;; Additional useful functions like unpopping the mark are at
+;; https://www.emacswiki.org/emacs/MarkCommands
+;; and https://www.emacswiki.org/emacs/VisibleMark
 
-;; Known bugs
+;;; Known Bugs
 ;;
-;; Observed in circe, when the buffer has a right margin, and there
+;; Observed in Circe, when the buffer has a right margin, and there
 ;; is a mark at the beginning of a line, any text in the margin on that line
-;; gets styled with the mark's face.  May also happen for left margins, but
-;; haven't tested yet.
+;; gets styled with the mark's face.  This may also occur with left margins,
+;; though this has not been verified.
 ;;
-;; Patches / pull requests / feedback welcome.
+;; Patches/pull requests/feedback welcome.
 
 ;;; Code:
 
 (require 'seq)
 
 (defgroup visible-mark nil
-  "Show the position of your mark."
+  "Show the position of the mark(s)."
   :group 'convenience
   :prefix "visible-mark-")
 
@@ -69,77 +69,85 @@
     (((class color) (background dark)) (:background "gray" :foreground "black"))
     (((class color) (background light)) (:background "grey80"))
     (t (:background "gray")))
-  "Face for the active mark.
-To redefine this in your init file,
-do it before loading/requiring visible-mark."
+  "Face for the active mark."
   :group 'visible-mark)
 
 (defcustom visible-mark-inhibit-trailing-overlay t
-  "Inhibit the overlay from extending from the line-end to the window margin."
+  "When non-nil, prevent overlays from extending past line endings."
   :group 'visible-mark
   :type 'boolean)
 
-;; Historic name (package-lint complains).
+;; Backward compatibility alias for the previous variable name.
 (define-obsolete-variable-alias
   'global-visible-mark-mode-exclude-alist
   'visible-mark-mode-global-exclude
   "0.1.0")
 
 (defcustom visible-mark-mode-global-exclude nil
-  "A list of buffer names to be excluded."
+  "A list of regexps matching buffer names to exclude.
+This only applies to `global-visible-mark-mode'."
   :group 'visible-mark
   :type '(repeat regexp))
 
 (defcustom visible-mark-max 1
-  "The number of marks in the backward direction to be visible."
+  "The number of recent marks to display.
+Marks are taken from the front of `mark-ring' (most recently set).
+After changing this value, toggle `visible-mark-mode' off and on
+for changes to take effect."
   :group 'visible-mark
   :type 'natnum)
 
 (defcustom visible-mark-forward-max 0
-  "The number of marks in the forward direction to be visible."
+  "The number of older marks to display.
+Marks are taken from the end of `mark-ring' (oldest marks).
+After changing this value, toggle `visible-mark-mode' off and on
+for changes to take effect."
   :group 'visible-mark
   :type 'natnum)
 
 (defcustom visible-mark-faces nil
-  "A list of mark faces for marks in the backward direction.
-If `visible-mark-max' is greater than the amount of `visible-mark-faces',
-the last defined face will be reused."
+  "A list of faces for recent marks.
+When the mark is active, the first face is replaced with
+`visible-mark-active' face.  If `visible-mark-max' is greater
+than the number of faces, the last face is reused."
   :group 'visible-mark
   :type '(repeat face))
 
 (defcustom visible-mark-forward-faces nil
-  "A list of mark faces for marks in the forward direction."
+  "A list of faces for older marks.
+If `visible-mark-forward-max' is greater than the number of faces,
+the last face is reused."
   :group 'visible-mark
   :type '(repeat face))
 
 
-;;; example faces
+;;; Example Faces
 
 (defface visible-mark-face1
   '((((type tty) (class mono)) (:inverse-video t))
     (t (:background "light salmon")))
-  "Example face which can be customized and added to subsequent face lists."
+  "Example face for use in `visible-mark-faces' or `visible-mark-forward-faces'."
   :group 'visible-mark)
 
 (defface visible-mark-face2
   '((((type tty) (class mono)) (:inverse-video t))
     (t (:background "light goldenrod")))
-  "Example face which can be customized and added to subsequent face lists."
+  "Example face for use in `visible-mark-faces' or `visible-mark-forward-faces'."
   :group 'visible-mark)
 
 (defface visible-mark-forward-face1
   '((((type tty) (class mono)) (:inverse-video t))
     (t (:background "pale green")))
-  "Example face which can be customized and added to subsequent face lists."
+  "Example face for use in `visible-mark-faces' or `visible-mark-forward-faces'."
   :group 'visible-mark)
 
 (defface visible-mark-forward-face2 nil
   "Placeholder face for customization and addition to subsequent face lists."
   :group 'visible-mark)
 
-;; Make local on buffer activation.
+;; Buffer-local storage for overlays; set when mode is enabled.
 (defvar visible-mark--overlays nil
-  "The overlays used for mark faces.  Used internally by `visible-mark-mode'.")
+  "The overlays used to display mark faces.")
 
 (defun visible-mark--initialize-overlays ()
   "Setup overlays in the current buffer."
@@ -163,8 +171,7 @@ the last defined face will be reused."
    (overlays-at pos)))
 
 (defun visible-mark--move-overlays ()
-  "Update overlays in `visible-mark--overlays'.
-This is run in the `post-command-hook'."
+  "Update overlays in `visible-mark--overlays'."
   (mapc #'delete-overlay visible-mark--overlays)
   (let ((marks (cons (mark-marker) mark-ring))
         (overlays visible-mark--overlays)
@@ -178,6 +185,7 @@ This is run in the `post-command-hook'."
         (pop faces)))
     ;; Precompute forward marks to avoid O(n²) from repeated `last' calls.
     ;; Use `reverse' (not `nreverse') since `last' returns a tail of `marks'.
+    ;; Note: "forward" here refers to older marks in the ring, not buffer position.
     (let ((forward-marks (reverse (last marks visible-mark-forward-max))))
       (dotimes (_ visible-mark-forward-max)
         (visible-mark--move-overlay
@@ -208,7 +216,7 @@ This is run in the `post-command-hook'."
           (move-overlay overlay pos pos-end)))))))
 
 (defun visible-mark--mode-maybe ()
-  "Enable visible mark mode based on the context."
+  "Enable `visible-mark-mode' unless buffer is excluded."
   (unless (or (minibufferp)
               (seq-some
                (lambda (pattern)
@@ -218,7 +226,7 @@ This is run in the `post-command-hook'."
 
 ;;;###autoload
 (define-minor-mode visible-mark-mode
-  "A mode to make the mark visible."
+  "Minor mode to highlight the mark in the buffer."
   :global nil
 
   (cond
