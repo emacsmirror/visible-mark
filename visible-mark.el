@@ -91,12 +91,12 @@ do it before loading/requiring visible-mark."
 (defcustom visible-mark-max 1
   "The number of marks in the backward direction to be visible."
   :group 'visible-mark
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom visible-mark-forward-max 0
   "The number of marks in the forward direction to be visible."
   :group 'visible-mark
-  :type 'integer)
+  :type 'natnum)
 
 (defcustom visible-mark-faces nil
   "A list of mark faces for marks in the backward direction.
