@@ -56,6 +56,8 @@
 
 ;;; Code:
 
+(require 'seq)
+
 (defgroup visible-mark nil
   "Show the position of your mark."
   :group 'convenience
@@ -142,9 +144,9 @@ the last defined face will be reused."
 (defun visible-mark--initialize-overlays ()
   "Setup overlays in the current buffer."
   (mapc
-   (lambda (x)
-     (when (eq 'visible-mark (overlay-get x 'category))
-       (delete-overlay x)))
+   (lambda (overlay)
+     (when (eq 'visible-mark (overlay-get overlay 'category))
+       (delete-overlay overlay)))
    (overlays-in (point-min) (point-max)))
   (let (overlays)
     (dotimes (_ (+ visible-mark-max visible-mark-forward-max))
@@ -155,15 +157,10 @@ the last defined face will be reused."
 
 (defun visible-mark--find-overlay-at (pos)
   "Return the visible-mark overlay at POS."
-  (let ((overlays (overlays-at pos))
-        found)
-    (while overlays
-      (let ((overlay (car overlays)))
-        (setq overlays (cdr overlays))
-        (when (eq 'visible-mark (overlay-get overlay 'category))
-          (setq overlays nil) ; Break.
-          (setq found overlay))))
-    found))
+  (seq-find
+   (lambda (overlay)
+     (eq 'visible-mark (overlay-get overlay 'category)))
+   (overlays-at pos)))
 
 (defun visible-mark--move-overlays ()
   "Update overlays in `visible-mark--overlays'.
@@ -212,23 +209,12 @@ This is run in the `post-command-hook'."
 
 (defun visible-mark--mode-maybe ()
   "Enable visible mark mode based on the context."
-  (when (cond
-         ((minibufferp (current-buffer))
-          nil)
-         ((let ((name (buffer-name))
-                (exclusions visible-mark-mode-global-exclude)
-                (found nil))
-            (while exclusions
-              (let ((arg (car exclusions)))
-                (setq exclusions (cdr exclusions))
-                (when (string-match-p arg name)
-                  (setq exclusions nil) ; Break.
-                  (setq found t))))
-            found)
-          nil)
-         (t
-          t))
-    (visible-mark-mode t)))
+  (unless (or (minibufferp)
+              (seq-some
+               (lambda (pattern)
+                 (string-match-p pattern (buffer-name)))
+               visible-mark-mode-global-exclude))
+    (visible-mark-mode 1)))
 
 ;;;###autoload
 (define-minor-mode visible-mark-mode
